@@ -20,18 +20,18 @@ namespace aZeroECS
 			:m_componentManager(componentManager) { }
 
 		/** Creates a new Entity object with a unique ID.
-		@return Entity&&
+		@return Entity
 		*/
-		Entity&& CreateEntity()
+		Entity CreateEntity()
 		{
 			if (!m_freeEntityIDs.empty())
 			{
-				int id = m_freeEntityIDs.front();
+				const int id = m_freeEntityIDs.front();
 				m_freeEntityIDs.pop();
 				return Entity(id);
 			}
 
-			int id = m_currentMax;
+			const int id = m_currentMax;
 			m_currentMax++;
 			return Entity(id);
 		}
@@ -48,7 +48,7 @@ namespace aZeroECS
 			if (entity.m_id == -1)
 				return;
 
-			for (auto [index, bitFlag] : m_componentManager.m_typeToBitflag)
+			for (const auto [index, bitFlag] : m_componentManager.m_typeToBitflag)
 			{
 				if (entity.m_componentMask.test(bitFlag))
 				{

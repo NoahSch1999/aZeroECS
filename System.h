@@ -18,8 +18,8 @@ namespace aZeroECS
 	protected:
 		std::bitset<MAXCOMPONENTS> m_componentMask;
 		ComponentManager& m_componentManager;
-
 		MappedVector<Entity> m_entities;
+
 	public:
 		System(ComponentManager& componentManager)
 			:m_componentManager(componentManager) { }

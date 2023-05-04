@@ -12,26 +12,49 @@ namespace aZeroECS
 		virtual ~ComponentArrayBase() = default;
 
 		/** Pure virtual which is overriden by ComponentArray to allow MappedVector::Remove() without having to specify template parameters.
-		@param id Unique Entity ID
+		@param entity The Entity to remove
 		@return void
 		*/
-		virtual void Remove(int id) = 0;
+		virtual void RemoveComponent(Entity entity) = 0;
 	};
 
 	template<typename T>
-	struct ComponentArray : public ComponentArrayBase
+	class ComponentArray : public ComponentArrayBase
 	{
-		ComponentArray() = default;
+		friend class ComponentManager;
 
+	private:
 		MappedVector<T> m_components;
 
-		/** Removes the component matching the specified Entity ID.
-		@param id Unique Entity ID
+	public:
+		ComponentArray() = default;
+
+		/** Returns a pointer to the component of type T for the input Entity.
+		* This method returns nullptr if the input Entity doesn't have a component of type T.
+		@param entity The Entity to get the component for
+		@return T* const
+		*/
+		T* const GetComponent(Entity entity)
+		{
+			return m_components.GetObject(entity.m_id);
+		}
+
+		/** Returns a reference to the component of type T for the input Entity.
+		@param entity The Entity to get the component for
+		@return T&
+		*/
+		T& const GetComponentFast(Entity entity)
+		{
+			return m_components.GetObjectFast(entity.m_id);
+		}
+
+		/** Removes the component for the input Entity.
+		@param entity The Entity to remove
 		@return void
 		*/
-		virtual void Remove(int id) override
+		virtual void RemoveComponent(Entity entity) override
 		{
-			m_components.Remove(id);
+			m_components.Remove(entity.m_id);
 		}
 	};
 
@@ -57,7 +80,7 @@ namespace aZeroECS
 		template<typename T>
 		void RegisterComponent()
 		{
-			std::type_index typeIndex = std::type_index(typeid(T));
+			const std::type_index typeIndex = std::type_index(typeid(T));
 
 			m_typeToBitflag.emplace(typeIndex, m_componentArrayMap.size());
 			m_componentArrayMap.emplace(typeIndex, std::make_unique<ComponentArray<T>>());
@@ -82,12 +105,11 @@ namespace aZeroECS
 		{
 			entity.m_componentMask.set(static_cast<size_t>(m_typeToBitflag.at(std::type_index(typeid(T)))), true);
 
-			ComponentArray<T>* componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
+			ComponentArray<T>* const componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
 
 			componentArray->m_components.Add(entity.m_id, std::move(T()));
 
 			m_systemManager.EntityUpdated(entity);
-
 		}
 
 		/** Adds a component of type T to the input Entity.
@@ -101,12 +123,11 @@ namespace aZeroECS
 		{
 			entity.m_componentMask.set(static_cast<size_t>(m_typeToBitflag.at(std::type_index(typeid(T)))), true);
 
-			ComponentArray<T>* componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
+			ComponentArray<T>* const componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
 
 			componentArray->m_components.Add(entity.m_id, data);
 
 			m_systemManager.EntityUpdated(entity);
-
 		}
 
 		/** Returns a pointer to the component of type T for the input Entity.
@@ -115,32 +136,12 @@ namespace aZeroECS
 		* This method returns nullptr if the input Entity doesn't have a component of type T.
 		* TODO: TRY TO AVOID GOING THROUGH THE MAP TO ACCESS THE COMPONENT ARRAY
 		@param entity The Entity to get the component for
-		@return void
+		@return T* const
 		*/
 		template<typename T>
-		T* GetComponent(const Entity& entity)
+		T* const GetComponent(const Entity& entity)
 		{
-			ComponentArray<T>* componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
-			if(componentArray->m_components.Contains(entity.m_id))
-				return componentArray->m_components.GetObjectByID(entity.m_id);
-
-			return nullptr;
-		}
-
-		/** Returns a pointer to the component of type T within the input ComponentArray<T> for the input Entity.
-		* This method returns nullptr if the input Entity doesn't have a component of type T.
-		* TODO: TRY TO AVOID GOING THROUGH THE MAP TO ACCESS THE COMPONENT ARRAY
-		@param componentArray The ComponentArray<T> to get the component from
-		@param entity The Entity to get the component for
-		@return void
-		*/
-		template<typename T>
-		T* GetComponent(ComponentArray<T>& componentArray, const Entity& entity)
-		{
-			if (componentArray.m_components.Contains(entity.m_id))
-				return componentArray.m_components.GetObjectByID(entity.m_id);
-
-			return nullptr;
+			return static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get())->m_components.GetObject(entity.m_id);
 		}
 
 		/** Returns a pointer to the component of type T for the input Entity.
@@ -150,27 +151,12 @@ namespace aZeroECS
 		* Consider using ComponentManager::GetComponent() or atleast ComponentManager::HasComponent<T>() if you want to avoid this.
 		* TODO: TRY TO AVOID GOING THROUGH THE MAP TO ACCESS THE COMPONENT ARRAY
 		@param entity The Entity to get the component for
-		@return void
+		@return T&
 		*/
 		template<typename T>
-		T* GetComponentFast(const Entity& entity)
+		T& GetComponentFast(const Entity& entity)
 		{
-			ComponentArray<T>* componentArray = static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get());
-			return componentArray->m_components.GetObjectByID(entity.m_id);
-		}
-
-		/** Returns a pointer to the component of type T within the input ComponentArray<T> for the input Entity.
-		* This method will might crash if the Entity doesn't have a component of type T. This avoid unneccessary if-statements. 
-		* Consider using ComponentManager::GetComponent() or atleast ComponentManager::HasComponent<T>() if you want to avoid this.
-		* TODO: TRY TO AVOID GOING THROUGH THE MAP TO ACCESS THE COMPONENT ARRAY
-		@param componentArray The ComponentArray<T> to get the component from
-		@param entity The Entity to get the component for
-		@return void
-		*/
-		template<typename T>
-		T* GetComponentFast(ComponentArray<T>& componentArray, const Entity& entity)
-		{
-			return componentArray.m_components.GetObjectByID(entity.m_id);
+			return static_cast<ComponentArray<T>*>(m_componentArrayMap.at(std::type_index(typeid(T))).get())->m_components.GetObjectFast(entity.m_id);
 		}
 
 		/** Removes the component of type T for the input Entity.
@@ -182,8 +168,8 @@ namespace aZeroECS
 		{
 			entity.m_componentMask.set(static_cast<size_t>(m_typeToBitflag.at(std::type_index(typeid(T)))), false);
 
-			ComponentArrayBase* base = m_componentArrayMap.at(std::type_index(typeid(T))).get();
-			base->Remove(entity.m_id);
+			ComponentArrayBase* const base = m_componentArrayMap.at(std::type_index(typeid(T))).get();
+			base->Remove(entity);
 
 			m_systemManager.EntityUpdated(entity);
 		}
@@ -197,8 +183,8 @@ namespace aZeroECS
 		{
 			entity.m_componentMask.set(static_cast<size_t>(m_typeToBitflag.at(typeIndex)), false);
 
-			ComponentArrayBase* base = m_componentArrayMap.at(typeIndex).get();
-			base->Remove(entity.m_id);
+			ComponentArrayBase* const base = m_componentArrayMap.at(typeIndex).get();
+			base->RemoveComponent(entity);
 
 			m_systemManager.EntityUpdated(entity);
 		}

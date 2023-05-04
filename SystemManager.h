@@ -40,7 +40,7 @@ namespace aZeroECS
 		{
 			for (auto& system : m_registeredSystems)
 			{
-				bool bound = system.second->Bind(entity);
+				const bool bound = system.second->Bind(entity);
 				if (!bound)
 				{
 					system.second->UnBind(entity);

@@ -30,7 +30,7 @@ public:
 	*/
 	void Add(int id, const T& value)
 	{
-		int index = m_objects.size();
+		const int index = m_objects.size();
 		m_objects.emplace_back(value);
 		m_idToIndex.emplace(id, index);
 		m_indexToId[index] = id;
@@ -42,10 +42,10 @@ public:
 	*/
 	void Remove(int id)
 	{
-		int index = m_idToIndex.at(id);
+		const int index = m_idToIndex.at(id);
 		m_idToIndex.erase(id);
 
-		int indexOfLast = m_objects.size() - 1;
+		const int indexOfLast = m_objects.size() - 1;
 
 		if (indexOfLast == index)
 		{
@@ -56,7 +56,7 @@ public:
 
 		m_objects[index] = std::move(m_objects[indexOfLast]);
 
-		int idOfLast = m_indexToId.at(indexOfLast);
+		const int idOfLast = m_indexToId.at(indexOfLast);
 		m_idToIndex.at(idOfLast) = index;
 
 		m_indexToId.at(index) = idOfLast;
@@ -87,16 +87,31 @@ public:
 	*/
 	bool Contains(int id) const
 	{
-		return m_idToIndex.count(id) > 0;
+		return m_idToIndex.contains(id);
 	}
 
 	/** Returns a pointer to the element for the input id.
+	* This method returns nullptr if the MappedVector doesn't contain an element for the input id.
 	@param id The id to retrieve the element with.
-	@return T*
+	@return T* const
 	*/
-	T* GetObjectByID(int id) 
+	T* const GetObject(int id)
+	{
+		std::unordered_map<int, int>::const_iterator it = m_idToIndex.find(id);
+		if (it != m_idToIndex.end()) 
+			return &m_objects[it->second];
+
+		return nullptr;
+	}
+
+	/** Returns a reference to the element for the input id.
+	* Doesn't check whether or not the element is within the MappedVector.
+	@param id The id to retrieve the element with.
+	@return T&
+	*/
+	T& GetObjectFast(int id) 
 	{ 
-		return &m_objects[m_idToIndex.at(id)]; 
+		return m_objects[m_idToIndex.at(id)]; 
 	}
 
 	/** Returns a reference to the vector.
