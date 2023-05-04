@@ -94,11 +94,17 @@ public:
 	@param id The id to retrieve the element with.
 	@return T*
 	*/
-	T* GetObjectByID(int id) { return &m_objects[m_idToIndex.at(id)]; }
+	T* GetObjectByID(int id) 
+	{ 
+		return &m_objects[m_idToIndex.at(id)]; 
+	}
 
 	/** Returns a reference to the vector.
 	* To iterate over it in a safe manner, use structure binding with an iterator or loop using the std::vector::size().
 	@return std::vector<T>&
 	*/
-	std::vector<T>& GetObjects() { return m_objects; }
+	std::vector<T>& GetObjects() 
+	{ 
+		return m_objects; 
+	}
 };
