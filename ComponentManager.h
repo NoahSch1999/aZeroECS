@@ -29,6 +29,11 @@ namespace aZeroECS
 	public:
 		ComponentArray() = default;
 
+		ComponentArray(const ComponentArray&) = delete;
+		ComponentArray(ComponentArray&&) = delete;
+		ComponentArray operator=(const ComponentArray&) = delete;
+		ComponentArray operator=(ComponentArray&&) = delete;
+
 		/** Returns a pointer to the component of type T for the input Entity.
 		* This method returns nullptr if the input Entity doesn't have a component of type T.
 		@param entity The Entity to get the component for
@@ -72,6 +77,11 @@ namespace aZeroECS
 	public:
 		ComponentManager(SystemManager& systemManager)
 			:m_systemManager(systemManager) { }
+
+		ComponentManager(const ComponentManager&) = delete;
+		ComponentManager(ComponentManager&&) = delete;
+		ComponentManager operator=(const ComponentManager&) = delete;
+		ComponentManager operator=(ComponentManager&&) = delete;
 
 		/** Registers a new component type of type T for the ComponentManager.
 		* This should be called once for each component that the ComponentManager should support.
@@ -131,7 +141,7 @@ namespace aZeroECS
 		}
 
 		/** Returns a pointer to the component of type T for the input Entity.
-		* Consider using ComponentManager::GetComponentArray<T>() in conjunctions with ComponentManager::GetComponent(ComponentArray<T>& componentArray, const Entity& entity) when accessing multiple components of the same type in a row.
+		* Consider using ComponentManager::GetComponentArray<T>() in conjunctions with ComponentArray::GetComponent() or ComponentArray::GetComponentFast() to avoid additional lookup time per component.
 		* This will avoid the additional ComponentArray<T> lookup time which this method has.
 		* This method returns nullptr if the input Entity doesn't have a component of type T.
 		* TODO: TRY TO AVOID GOING THROUGH THE MAP TO ACCESS THE COMPONENT ARRAY
@@ -145,7 +155,7 @@ namespace aZeroECS
 		}
 
 		/** Returns a pointer to the component of type T for the input Entity.
-		* Consider using ComponentManager::GetComponentArray<T>() in conjunctions with ComponentManager::GetComponent(ComponentArray<T>& componentArray, const Entity& entity) when accessing multiple components of the same type in a row.
+		* Consider using ComponentManager::GetComponentArray<T>() in conjunctions with ComponentArray::GetComponent() or ComponentArray::GetComponentFast() to avoid additional lookup time per component.
 		* This will avoid the additional ComponentArray<T> lookup time which this method has.
 		* This method will might crash if the Entity doesn't have a component of type T. This avoid unneccessary if-statements. 
 		* Consider using ComponentManager::GetComponent() or atleast ComponentManager::HasComponent<T>() if you want to avoid this.

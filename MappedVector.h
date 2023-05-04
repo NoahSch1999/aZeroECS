@@ -23,6 +23,11 @@ public:
 		m_objects.reserve(startSize);
 	}
 
+	MappedVector(const MappedVector&) = delete;
+	MappedVector(MappedVector&&) = delete;
+	MappedVector operator=(const MappedVector&) = delete;
+	MappedVector operator=(MappedVector&&) = delete;
+
 	/** Stores the input value inside the vector and makes it accessible through the input id.
 	@param id Unique id to store the value for
 	@param value Initial value for the object

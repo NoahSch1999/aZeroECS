@@ -15,6 +15,11 @@ namespace aZeroECS
 	public:
 		SystemManager() = default;
 
+		SystemManager(const SystemManager&) = delete;
+		SystemManager(SystemManager&&) = delete;
+		SystemManager operator=(const SystemManager&) = delete;
+		SystemManager operator=(SystemManager&&) = delete;
+
 		/** Registers the input System subclass and returns a std::shared_ptr to the shared memory block.
 		@param componentManager The ComponentManager which the System subclass can use to access components
 		@param args An arbitrary number of arguments which will be passed to the constructor of System subclass after componentManager

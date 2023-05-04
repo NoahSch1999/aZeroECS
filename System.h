@@ -24,6 +24,11 @@ namespace aZeroECS
 		System(ComponentManager& componentManager)
 			:m_componentManager(componentManager) { }
 
+		System(const System&) = delete;
+		System(System&&) = delete;
+		System operator=(const System&) = delete;
+		System operator=(System&&) = delete;
+
 		/** Binds the input Entity if it's m_componentMask matches the m_componentMask set in the System subclass constructor.
 		@param entity The Entity which should be bound
 		@return bool TRUE: Entity is either already bound or bound during this call of System::Bind(). FALSE: Entity::m_componentMask isn't compatible with System::m_componentMask

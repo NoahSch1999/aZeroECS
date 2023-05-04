@@ -19,6 +19,11 @@ namespace aZeroECS
 		EntityManager(ComponentManager& componentManager)
 			:m_componentManager(componentManager) { }
 
+		EntityManager(const EntityManager&) = delete;
+		EntityManager(EntityManager&&) = delete;
+		EntityManager operator=(const EntityManager&) = delete;
+		EntityManager operator=(EntityManager&&) = delete;
+
 		/** Creates a new Entity object with a unique ID.
 		@return Entity
 		*/
